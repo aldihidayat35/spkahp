@@ -235,9 +235,46 @@ SPK_AHP/
 - Cek username/password MySQL di `.env`
 - Pastikan user MySQL punya akses ke database
 
-### Tampilan berantakan
+### Tampilan berantakan / Asset tidak load
 - Pastikan koneksi internet aktif (untuk Bootstrap CDN)
 - Atau download Bootstrap dan simpan lokal
+- **Untuk Subdomain**: Pastikan BASE_URL di `.env` sesuai subdomain
+- Cek struktur folder: assets harus di dalam `public/assets/`
+- Set permission folder `public/assets/` ke 755
+
+### Khusus Subdomain (contoh: apkahp.demoj35.site)
+
+**Struktur folder di server:**
+```
+public_html/
+└── apkahp.demoj35.site/
+    ├── app/
+    ├── config/
+    ├── database/
+    ├── helpers/
+    ├── public/
+    │   ├── assets/
+    │   │   ├── css/
+    │   │   ├── js/
+    │   │   ├── img/
+    │   │   └── vendor/
+    │   ├── .htaccess
+    │   └── index.php
+    ├── uploads/
+    ├── .env
+    └── .htaccess
+```
+
+**File `.env` harus:**
+```env
+BASE_URL=https://apkahp.demoj35.site
+# TANPA trailing slash!
+```
+
+**Jika assets tetap tidak load:**
+1. Pindahkan isi folder `public/` ke root subdomain
+2. Edit `index.php` di root, ubah path menjadi relatif
+3. Assets akan diakses dari: `https://apkahp.demoj35.site/assets/`
 
 ## 📝 Catatan Pengembangan
 

@@ -557,13 +557,18 @@ class Admin extends Controller {
         $kriteria_list = $kriteriaModel->getAllActive();
         $alternatif = $alternatifModel->getAllActive();
 
+        // Get kriteria_id from GET parameter if not from URL
+        if (!$kriteria_id && isset($_GET['kriteria_id'])) {
+            $kriteria_id = $_GET['kriteria_id'];
+        }
+
         if ($kriteria_id) {
             $kriteria_selected = $kriteriaModel->findById($kriteria_id);
             $pairwise = $alternatifModel->getPairwiseByKriteria($kriteria_id);
 
             // Calculate AHP
             $ahp_result = null;
-            if (count($alternatif) > 1) {
+            if (count($alternatif) > 1 && !empty($pairwise)) {
                 $comparisons = [];
                 foreach ($pairwise as $pw) {
                     $comparisons[] = [
@@ -608,11 +613,11 @@ class Admin extends Controller {
             $alternatifModel = $this->model('AlternatifModel');
             if ($alternatifModel->savePairwise($kriteria_id, $alternatif_1, $alternatif_2, $nilai)) {
                 setFlash('success', 'Perbandingan berhasil disimpan', 'success');
+                $this->redirect('admin/pairwiseAlternatif?kriteria_id=' . $kriteria_id);
             } else {
                 setFlash('error', 'Gagal menyimpan perbandingan', 'error');
+                $this->redirect('admin/pairwiseAlternatif?kriteria_id=' . $kriteria_id);
             }
-
-            $this->redirect('admin/pairwiseAlternatif/' . $kriteria_id);
         }
     }
 

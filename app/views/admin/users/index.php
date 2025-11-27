@@ -59,17 +59,21 @@
                                         <a href="<?= url('admin/editUser/' . $user['id']) ?>" class="btn btn-warning">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="<?= url('admin/resetPassword/' . $user['id']) ?>" 
-                                           class="btn btn-info"
-                                           onclick="return confirm('Reset password menjadi: password ?')">
-                                            <i class="bi bi-key"></i>
-                                        </a>
+                                        <form method="POST" action="<?= url('admin/resetPassword/' . $user['id']) ?>" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="<?= $data['csrf_token'] ?>">
+                                            <button type="submit" class="btn btn-info btn-sm"
+                                                    onclick="return confirm('Reset password menjadi: password ?')">
+                                                <i class="bi bi-key"></i>
+                                            </button>
+                                        </form>
                                         <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                        <a href="<?= url('admin/deleteUser/' . $user['id']) ?>" 
-                                           class="btn btn-danger"
-                                           onclick="return confirm('Yakin ingin menghapus user ini?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <form method="POST" action="<?= url('admin/deleteUser/' . $user['id']) ?>" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="<?= $data['csrf_token'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('Yakin ingin menghapus user ini?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                         <?php endif; ?>
                                     </div>
                                 </td>
