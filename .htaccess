@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# Prevent access to .env file
+<Files .env>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Redirect root to public/index.php
+RewriteCond %{REQUEST_URI} ^/SPK_AHP/?$
+RewriteRule ^(.*)$ public/index.php [L]
+
+# Redirect to public folder if not already there
+RewriteCond %{REQUEST_URI} !^/SPK_AHP/public/
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
