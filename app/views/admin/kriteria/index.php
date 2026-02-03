@@ -82,13 +82,9 @@ $fixed_weights_enabled = !empty($ahp_settings['enforce_fixed_weights']);
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a href="<?= url('admin/editKriteria/' . $k['id']) ?>" class="btn btn-warning">
-                                            <i class="bi bi-pencil"></i>
+                                            <i class="bi bi-pencil"></i> Edit
                                         </a>
-                                        <a href="<?= url('admin/deleteKriteria/' . $k['id']) ?>" 
-                                           class="btn btn-danger"
-                                           onclick="return confirm('Yakin ingin menghapus kriteria ini?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <!-- Kriteria tidak dapat dihapus untuk menjaga integritas sistem -->
                                     </div>
                                 </td>
                             </tr>

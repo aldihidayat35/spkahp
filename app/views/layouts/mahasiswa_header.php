@@ -38,12 +38,50 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('mahasiswa/uploadKHS') ?>">
+                            <i class="bi bi-file-earmark-pdf"></i> Upload KHS
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-white" href="<?= url('mahasiswa/hasilRekomendasi') ?>">
                             <i class="bi bi-trophy"></i> Hasil Rekomendasi
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="<?= url('mahasiswa/profil') ?>">
+                        <a class="nav-link text-white" href="<?= url('mahasiswa/judulSaya') ?>">
+                            <i class="bi bi-book"></i> Judul Saya
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('mahasiswa/cariJudulKating') ?>">
+                            <i class="bi bi-search"></i> Judul Kakak Tingkat
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('mahasiswa/kurikulum') ?>">
+                            <i class="bi bi-journal-text"></i> Kurikulum Saya
+                        </a>
+                    </li>
+                    <li class="nav-item">                        <a class="nav-link text-white" href="<?= url('mahasiswa/judulSaya') ?>">
+                            <i class="bi bi-journal-text"></i> Judul Saya
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('mahasiswa/cariJudulKating') ?>">
+                            <i class="bi bi-search"></i> Judul Kakak Tingkat
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('mahasiswa/uploadKHS') ?>">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Upload KHS
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('mahasiswa/kurikulum') ?>">
+                            <i class="bi bi-book"></i> Kurikulum Saya
+                        </a>
+                    </li>
+                    <li class="nav-item">                        <a class="nav-link text-white" href="<?= url('mahasiswa/profil') ?>">
                             <i class="bi bi-person"></i> Profil Saya
                         </a>
                     </li>

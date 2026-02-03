@@ -453,4 +453,306 @@ class Mahasiswa extends Controller {
 
         $this->view('mahasiswa/cara_kerja_ahp', $data);
     }
+
+    // ========================================
+    // UPLOAD FOTO PROFIL
+    // ========================================
+
+    public function uploadFoto() {
+        if ($this->isPost()) {
+            $this->validateCSRF();
+            $userModel = $this->model('UserModel');
+            
+            if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
+                $file = $_FILES['foto'];
+                $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
+                $max_size = 2 * 1024 * 1024; // 2MB
+                
+                // Validate file type
+                if (!in_array($file['type'], $allowed_types)) {
+                    setFlash('error', 'Format file tidak valid. Gunakan JPG, JPEG, atau PNG.', 'error');
+                    redirect('mahasiswa/profil');
+                    return;
+                }
+                
+                // Validate file size
+                if ($file['size'] > $max_size) {
+                    setFlash('error', 'Ukuran file maksimal 2MB.', 'error');
+                    redirect('mahasiswa/profil');
+                    return;
+                }
+                
+                // Generate unique filename
+                $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $filename = 'user_' . $_SESSION['user_id'] . '_' . time() . '.' . $ext;
+                $upload_path = ROOT_PATH . '/uploads/foto_user/' . $filename;
+                
+                // Delete old photo if exists
+                $old_user = $userModel->getUserById($_SESSION['user_id']);
+                if ($old_user && !empty($old_user['foto'])) {
+                    $old_path = ROOT_PATH . '/uploads/foto_user/' . $old_user['foto'];
+                    if (file_exists($old_path)) {
+                        unlink($old_path);
+                    }
+                }
+                
+                // Upload new photo
+                if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+                    if ($userModel->updateFoto($_SESSION['user_id'], $filename)) {
+                        setFlash('success', 'Foto profil berhasil diupdate.', 'success');
+                    } else {
+                        setFlash('error', 'Gagal menyimpan foto ke database.', 'error');
+                    }
+                } else {
+                    setFlash('error', 'Gagal mengupload foto.', 'error');
+                }
+            } else {
+                setFlash('error', 'Tidak ada file yang diupload.', 'error');
+            }
+        }
+        
+        redirect('mahasiswa/profil');
+    }
+
+    // ========================================
+    // KURIKULUM
+    // ========================================
+
+    public function kurikulum() {
+        $userModel = $this->model('UserModel');
+        $kurikulumModel = $this->model('KurikulumModel');
+        
+        $user = $userModel->getUserById($_SESSION['user_id']);
+        $angkatan = $user['angkatan'] ?? date('Y');
+        
+        // Get kurikulum for user's angkatan
+        $kurikulum = $kurikulumModel->getByAngkatan($angkatan);
+        $matakuliah = [];
+        
+        if ($kurikulum) {
+            $matakuliah = $kurikulumModel->getMataKuliah($kurikulum['id']);
+        }
+        
+        $data = [
+            'title' => 'Kurikulum Saya - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF(),
+            'angkatan' => $angkatan,
+            'kurikulum' => $kurikulum,
+            'matakuliah' => $matakuliah
+        ];
+        
+        $this->view('mahasiswa/kurikulum', $data);
+    }
+
+    // ========================================
+    // JUDUL TUGAS AKHIR
+    // ========================================
+
+    public function judulSaya() {
+        $judulModel = $this->model('MahasiswaJudulModel');
+        $alternatifModel = $this->model('AlternatifModel');
+        
+        $judul_list = $judulModel->getByMahasiswa($_SESSION['user_id']);
+        $tema_list = $alternatifModel->getAllActive();
+        
+        $data = [
+            'title' => 'Judul Tugas Akhir Saya - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF(),
+            'judul_list' => $judul_list,
+            'tema_list' => $tema_list
+        ];
+        
+        $this->view('mahasiswa/judul_saya', $data);
+    }
+
+    public function submitJudul() {
+        if ($this->isPost()) {
+            $this->validateCSRF();
+            $judulModel = $this->model('MahasiswaJudulModel');
+            
+            $data = [
+                'mahasiswa_id' => $_SESSION['user_id'],
+                'judul' => post('judul'),
+                'tema_id' => post('tema_id'),
+                'deskripsi' => post('deskripsi'),
+                'status' => 'draft'
+            ];
+            
+            if ($judulModel->create($data)) {
+                setFlash('success', 'Judul berhasil disimpan.', 'success');
+            } else {
+                setFlash('error', 'Gagal menyimpan judul.', 'error');
+            }
+        }
+        
+        redirect('mahasiswa/judulSaya');
+    }
+
+    public function editJudul($id) {
+        $judulModel = $this->model('MahasiswaJudulModel');
+        
+        if ($this->isPost()) {
+            $this->validateCSRF();
+            
+            $data = [
+                'judul' => post('judul'),
+                'tema_id' => post('tema_id'),
+                'deskripsi' => post('deskripsi')
+            ];
+            
+            if ($judulModel->update($id, $data)) {
+                setFlash('success', 'Judul berhasil diupdate.', 'success');
+            } else {
+                setFlash('error', 'Gagal mengupdate judul.', 'error');
+            }
+            
+            redirect('mahasiswa/judulSaya');
+        }
+    }
+
+    public function ajukanJudul($id) {
+        $judulModel = $this->model('MahasiswaJudulModel');
+        
+        if ($judulModel->submit($id)) {
+            setFlash('success', 'Judul berhasil diajukan untuk persetujuan.', 'success');
+        } else {
+            setFlash('error', 'Gagal mengajukan judul.', 'error');
+        }
+        
+        redirect('mahasiswa/judulSaya');
+    }
+
+    public function deleteJudul($id) {
+        $judulModel = $this->model('MahasiswaJudulModel');
+        
+        if ($judulModel->delete($id)) {
+            setFlash('success', 'Judul berhasil dihapus.', 'success');
+        } else {
+            setFlash('error', 'Gagal menghapus judul.', 'error');
+        }
+        
+        redirect('mahasiswa/judulSaya');
+    }
+
+    // ========================================
+    // CARI JUDUL KATING
+    // ========================================
+
+    public function cariJudulKating() {
+        $judulKatingModel = $this->model('JudulKatingModel');
+        
+        $keyword = get('q', '');
+        $tahun = get('tahun', '2021');
+        
+        if (!empty($keyword)) {
+            $results = $judulKatingModel->search($keyword, $tahun);
+        } else {
+            $results = $judulKatingModel->getAll($tahun);
+        }
+        
+        $years = $judulKatingModel->getYears();
+        
+        $data = [
+            'title' => 'Cari Judul Kakak Tingkat - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF(),
+            'results' => $results,
+            'keyword' => $keyword,
+            'tahun' => $tahun,
+            'years' => $years
+        ];
+        
+        $this->view('mahasiswa/cari_judul_kating', $data);
+    }
+
+    // ========================================
+    // UPLOAD KHS
+    // ========================================
+
+    public function uploadKHS() {
+        $khsModel = $this->model('KHSModel');
+        $khs_list = $khsModel->getByMahasiswa($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Upload KHS - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF(),
+            'khs_list' => $khs_list
+        ];
+        
+        $this->view('mahasiswa/upload_khs', $data);
+    }
+
+    public function prosesUploadKHS() {
+        if ($this->isPost()) {
+            $this->validateCSRF();
+            $khsModel = $this->model('KHSModel');
+            
+            if (isset($_FILES['file_khs']) && $_FILES['file_khs']['error'] == 0) {
+                $file = $_FILES['file_khs'];
+                $allowed_types = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                $max_size = 5 * 1024 * 1024; // 5MB
+                
+                // Validate
+                if (!in_array($file['type'], $allowed_types)) {
+                    setFlash('error', 'Format file tidak valid. Gunakan PDF, JPG, JPEG, atau PNG.', 'error');
+                    redirect('mahasiswa/uploadKHS');
+                    return;
+                }
+                
+                if ($file['size'] > $max_size) {
+                    setFlash('error', 'Ukuran file maksimal 5MB.', 'error');
+                    redirect('mahasiswa/uploadKHS');
+                    return;
+                }
+                
+                // Generate filename
+                $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $filename = 'khs_' . $_SESSION['user_id'] . '_' . time() . '.' . $ext;
+                $upload_path = 'uploads/khs/' . $filename;
+                $full_path = ROOT_PATH . '/' . $upload_path;
+                
+                // Upload file
+                if (move_uploaded_file($file['tmp_name'], $full_path)) {
+                    $data = [
+                        'mahasiswa_id' => $_SESSION['user_id'],
+                        'file_name' => $file['name'],
+                        'file_path' => $upload_path,
+                        'file_size' => $file['size'],
+                        'semester' => post('semester'),
+                        'tahun_akademik' => post('tahun_akademik')
+                    ];
+                    
+                    if ($khsModel->upload($data)) {
+                        setFlash('success', 'KHS berhasil diupload. Menunggu verifikasi.', 'success');
+                    } else {
+                        setFlash('error', 'Gagal menyimpan data KHS.', 'error');
+                        unlink($full_path);
+                    }
+                } else {
+                    setFlash('error', 'Gagal mengupload file.', 'error');
+                }
+            } else {
+                setFlash('error', 'Tidak ada file yang diupload.', 'error');
+            }
+        }
+        
+        redirect('mahasiswa/uploadKHS');
+    }
+
+    public function deleteKHS($id) {
+        $khsModel = $this->model('KHSModel');
+        
+        // Check ownership
+        $khs = $khsModel->getById($id);
+        if ($khs && $khs['mahasiswa_id'] == $_SESSION['user_id']) {
+            if ($khsModel->delete($id)) {
+                setFlash('success', 'KHS berhasil dihapus.', 'success');
+            } else {
+                setFlash('error', 'Gagal menghapus KHS.', 'error');
+            }
+        } else {
+            setFlash('error', 'Akses ditolak.', 'error');
+        }
+        
+        redirect('mahasiswa/uploadKHS');
+    }
 }

@@ -310,9 +310,10 @@
                       FIX_SUMMARY
                            │
                     [Changelog]
-```
+```=                                                                                                                          
 
 ---
+
 
 ## 🔍 QUICK SEARCH
 

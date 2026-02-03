@@ -13,9 +13,26 @@
             <div class="card">
                 <div class="card-body text-center">
                     <?php if (isset($mahasiswa) && $mahasiswa): ?>
-                        <div class="avatar-circle-metronic mb-3">
-                            <i class="bi bi-person-fill"></i>
+                        <!-- Photo Upload Section -->
+                        <div class="position-relative d-inline-block mb-3">
+                            <?php 
+                            $userModel = new UserModel();
+                            $foto_url = $userModel->getFotoPath($_SESSION['user_id']);
+                            ?>
+                            <img src="<?= $foto_url ?>" 
+                                 alt="Foto Profil" 
+                                 class="rounded-circle" 
+                                 style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #009ef7;"
+                                 id="profilePhoto">
+                            <button type="button" 
+                                    class="btn btn-primary btn-sm rounded-circle position-absolute" 
+                                    style="bottom: 0; right: 0; width: 40px; height: 40px; padding: 0;"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#uploadFotoModal">
+                                <i class="bi bi-camera"></i>
+                            </button>
                         </div>
+                        
                         <h4 class="mb-1"><?= escape($mahasiswa['nama'] ?? 'Mahasiswa') ?></h4>
                         <p class="text-muted mb-3"><?= escape($mahasiswa['nim'] ?? '') ?></p>
                         <div class="mb-3">
@@ -152,6 +169,86 @@
                                 </a>
                                 <a href="<?= url('mahasiswa/dashboard') ?>" class="btn btn-secondary">
                                     <i class="bi bi-arrow-left"></i> Kembali
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Foto Modal -->
+<div class="modal fade" id="uploadFotoModal" tabindex="-1" aria-labelledby="uploadFotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="<?= url('mahasiswa/uploadFoto') ?>" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadFotoModalLabel">
+                        <i class="bi bi-camera"></i> Upload Foto Profil
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="foto" class="form-label">Pilih Foto</label>
+                        <input type="file" class="form-control" id="foto" name="foto" 
+                               accept="image/jpeg,image/jpg,image/png" required>
+                        <small class="text-muted">
+                            Format: JPG, JPEG, PNG | Maksimal: 2 MB
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Preview</label>
+                        <div class="text-center">
+                            <img id="fotoPreview" src="#" alt="Preview" 
+                                 class="img-thumbnail" 
+                                 style="max-width: 200px; display: none;">
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <small>
+                            <strong>Tips:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li>Gunakan foto dengan pencahayaan yang baik</li>
+                                <li>Foto wajah yang jelas dan profesional</li>
+                                <li>Ukuran ideal: 500x500 px atau rasio 1:1</li>
+                            </ul>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview foto sebelum upload
+document.getElementById('foto').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('fotoPreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+
+<?php require_once APP_PATH . '/views/layouts/footer.php'; ?>
+
                                 </a>
                             </div>
                         </form>
