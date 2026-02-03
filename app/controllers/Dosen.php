@@ -186,4 +186,17 @@ class Dosen extends Controller {
 
         $this->view('dosen/visualisasi/index', $data);
     }
+
+    // ========================================
+    // CARA KERJA AHP
+    // ========================================
+
+    public function caraKerjaAHP() {
+        $data = [
+            'title' => 'Cara Kerja Metode AHP - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF()
+        ];
+
+        $this->view('dosen/cara_kerja_ahp', $data);
+    }
 }

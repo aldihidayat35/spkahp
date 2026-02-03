@@ -95,6 +95,11 @@
                             <i class="bi bi-file-earmark-text"></i> Laporan Rekomendasi
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('admin/caraKerjaAHP') ?>">
+                            <i class="bi bi-question-circle"></i> Cara Kerja AHP
+                        </a>
+                    </li>
                 </ul>
                 
                 <hr class="text-white">

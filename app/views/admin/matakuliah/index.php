@@ -55,11 +55,13 @@
                                         <a href="<?= url('admin/editMatakuliah/' . $mk['id']) ?>" class="btn btn-warning">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="<?= url('admin/deleteMatakuliah/' . $mk['id']) ?>" 
-                                           class="btn btn-danger"
-                                           onclick="return confirm('Yakin ingin menghapus mata kuliah ini?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <form method="POST" action="<?= url('admin/deleteMatakuliah/' . $mk['id']) ?>" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                                            <button type="submit" class="btn btn-danger" 
+                                                    onclick="return confirm('Yakin ingin menghapus mata kuliah ini?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

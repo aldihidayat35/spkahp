@@ -163,41 +163,83 @@ class Mahasiswa extends Controller {
             return;
         }
 
-        // Get bobot kriteria dari pairwise comparison
-        $pairwise_kriteria = [];
-        $query = "SELECT kriteria_1, kriteria_2, nilai FROM pairwise_kriteria";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $pairwise_data = $stmt->fetchAll();
-
+        // ENFORCED FIXED WEIGHTS: Load from settings if enabled
+        $ahp_settings = require ROOT_PATH . '/config/ahp_settings.php';
         $criteriaWeights = [];
+        $cr_kriteria = 0;
         
-        if (!empty($pairwise_data)) {
-            // Build pairwise matrix untuk kriteria
-            $comparisons = [];
-            foreach ($pairwise_data as $pw) {
-                $comparisons[] = [
-                    'item1' => $pw['kriteria_1'],
-                    'item2' => $pw['kriteria_2'],
-                    'value' => $pw['nilai']
-                ];
-            }
-
-            $kriteria_ids = array_column($kriteria, 'id');
-            $ahp_kriteria = AHP::processAHP($kriteria_ids, $comparisons);
+        if (!empty($ahp_settings['enforce_fixed_weights'])) {
+            // Use fixed weights from config
+            $fixedScores = $ahp_settings['fixed_kriteria'];
+            $scoreMap = [];
             
-            // Map bobot kriteria
-            foreach ($kriteria as $index => $k) {
-                $criteriaWeights[$k['id']] = $ahp_kriteria['weights'][$index] ?? (1 / count($kriteria));
-            }
-            
-            $cr_kriteria = $ahp_kriteria['cr'];
-        } else {
-            // Jika tidak ada pairwise, gunakan equal weight
             foreach ($kriteria as $k) {
-                $criteriaWeights[$k['id']] = 1 / count($kriteria);
+                $name = strtolower(trim($k['nama_kriteria']));
+                $score = null;
+                
+                // Try exact match
+                if (isset($fixedScores[$name])) {
+                    $score = $fixedScores[$name];
+                } else {
+                    // Try partial match
+                    foreach ($fixedScores as $key => $val) {
+                        if (stripos($name, $key) !== false || stripos($key, $name) !== false) {
+                            $score = $val;
+                            break;
+                        }
+                    }
+                }
+                
+                if ($score === null) {
+                    $score = 5; // default
+                }
+                
+                $scoreMap[$k['id']] = $score;
             }
-            $cr_kriteria = 0;
+            
+            // Normalize to weights
+            $totalScore = array_sum($scoreMap);
+            foreach ($scoreMap as $id => $score) {
+                $criteriaWeights[$id] = $score / $totalScore;
+            }
+            
+            $cr_kriteria = 0; // Fixed weights are assumed consistent
+            
+        } else {
+            // Original dynamic calculation
+            $pairwise_kriteria = [];
+            $query = "SELECT kriteria_1, kriteria_2, nilai FROM pairwise_kriteria";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            $pairwise_data = $stmt->fetchAll();
+            
+            if (!empty($pairwise_data)) {
+                // Build pairwise matrix untuk kriteria
+                $comparisons = [];
+                foreach ($pairwise_data as $pw) {
+                    $comparisons[] = [
+                        'item1' => $pw['kriteria_1'],
+                        'item2' => $pw['kriteria_2'],
+                        'value' => $pw['nilai']
+                    ];
+                }
+
+                $kriteria_ids = array_column($kriteria, 'id');
+                $ahp_kriteria = AHP::processAHP($kriteria_ids, $comparisons);
+                
+                // Map bobot kriteria
+                foreach ($kriteria as $index => $k) {
+                    $criteriaWeights[$k['id']] = $ahp_kriteria['weights'][$index] ?? (1 / count($kriteria));
+                }
+                
+                $cr_kriteria = $ahp_kriteria['cr'];
+            } else {
+                // Jika tidak ada pairwise, gunakan equal weight
+                foreach ($kriteria as $k) {
+                    $criteriaWeights[$k['id']] = 1 / count($kriteria);
+                }
+                $cr_kriteria = 0;
+            }
         }
 
         // Define relevance mapping between criteria and alternatives
@@ -397,5 +439,18 @@ class Mahasiswa extends Controller {
 
             $this->view('mahasiswa/profil', $data);
         }
+    }
+
+    // ========================================
+    // CARA KERJA AHP
+    // ========================================
+
+    public function caraKerjaAHP() {
+        $data = [
+            'title' => 'Cara Kerja Metode AHP - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF()
+        ];
+
+        $this->view('mahasiswa/cara_kerja_ahp', $data);
     }
 }

@@ -483,12 +483,73 @@ class Admin extends Controller {
         }
     }
 
+    public function editMatakuliah($id) {
+        $matkulModel = $this->model('MataKuliahModel');
+
+        if ($this->isPost()) {
+            $this->validateCSRF();
+
+            $data = [
+                'kode' => strtoupper(trim(post('kode'))),
+                'nama_matkul' => trim(post('nama_matkul')),
+                'kriteria_id' => post('kriteria_id'),
+                'bobot_matkul' => post('bobot_matkul') ?: 1
+            ];
+
+            if ($matkulModel->update($id, $data)) {
+                setFlash('success', 'Mata kuliah berhasil diupdate', 'success');
+            } else {
+                setFlash('error', 'Gagal mengupdate mata kuliah', 'error');
+            }
+
+            $this->redirect('admin/matakuliah');
+        } else {
+            $kriteriaModel = $this->model('KriteriaModel');
+            $kriteria = $kriteriaModel->getAllActive();
+            $matakuliah = $matkulModel->findById($id);
+
+            if (!$matakuliah) {
+                setFlash('error', 'Mata kuliah tidak ditemukan', 'error');
+                $this->redirect('admin/matakuliah');
+                return;
+            }
+
+            $data = [
+                'title' => 'Edit Mata Kuliah - ' . APP_NAME,
+                'csrf_token' => $this->generateCSRF(),
+                'kriteria' => $kriteria,
+                'matakuliah' => $matakuliah
+            ];
+
+            $this->view('admin/matakuliah/form', $data);
+        }
+    }
+
+    public function deleteMatakuliah($id) {
+        if ($this->isPost()) {
+            $this->validateCSRF();
+
+            $matkulModel = $this->model('MataKuliahModel');
+            if ($matkulModel->delete($id)) {
+                setFlash('success', 'Mata kuliah berhasil dihapus', 'success');
+            } else {
+                setFlash('error', 'Gagal menghapus mata kuliah', 'error');
+            }
+        }
+
+        $this->redirect('admin/matakuliah');
+    }
+
     // ========================================
     // PAIRWISE COMPARISON
     // ========================================
 
     public function pairwiseKriteria() {
         require_once ROOT_PATH . '/helpers/ahp.php';
+        
+        // Check if fixed weights are enforced
+        $ahp_settings = require ROOT_PATH . '/config/ahp_settings.php';
+        $fixed_weights_enabled = !empty($ahp_settings['enforce_fixed_weights']);
         
         $kriteriaModel = $this->model('KriteriaModel');
         $kriteria = $kriteriaModel->getAllActive();
@@ -497,23 +558,84 @@ class Admin extends Controller {
         // Calculate AHP if data exists
         $ahp_result = null;
         if (count($kriteria) > 1) {
-            // Build comparisons array
-            $comparisons = [];
-            foreach ($pairwise as $pw) {
-                $comparisons[] = [
-                    'item1' => $pw['kriteria_1'],
-                    'item2' => $pw['kriteria_2'],
-                    'value' => $pw['nilai']
+            // If fixed weights are enforced, use them instead of pairwise
+            if ($fixed_weights_enabled) {
+                // Use fixed scores from config
+                $fixedScores = $ahp_settings['fixed_kriteria'];
+                $scoreMap = [];
+                
+                // Match criterion names
+                foreach ($kriteria as $k) {
+                    $name = strtolower($k['nama_kriteria']);
+                    $matched = false;
+                    
+                    // Exact match first
+                    foreach ($fixedScores as $configName => $score) {
+                        if (strtolower($configName) === $name) {
+                            $scoreMap[$k['id']] = $score;
+                            $matched = true;
+                            break;
+                        }
+                    }
+                    
+                    // Partial match if not found
+                    if (!$matched) {
+                        foreach ($fixedScores as $configName => $score) {
+                            if (strpos($name, strtolower($configName)) !== false || 
+                                strpos(strtolower($configName), $name) !== false) {
+                                $scoreMap[$k['id']] = $score;
+                                $matched = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Default score if no match
+                    if (!$matched) {
+                        $scoreMap[$k['id']] = 5;
+                    }
+                }
+                
+                // Normalize scores to weights
+                $totalScore = array_sum($scoreMap);
+                $weights = [];
+                $index = 0;
+                foreach ($kriteria as $k) {
+                    $weight = $scoreMap[$k['id']] / $totalScore;
+                    $weights[$index] = $weight;
+                    
+                    // Update database
+                    $kriteriaModel->updateBobot($k['id'], $weight);
+                    $index++;
+                }
+                
+                // Build result for display
+                $ahp_result = [
+                    'weights' => $weights,
+                    'cr' => 0, // Fixed weights are assumed consistent
+                    'is_consistent' => true
                 ];
-            }
+                
+            } else {
+                // Original pairwise logic
+                // Build comparisons array
+                $comparisons = [];
+                foreach ($pairwise as $pw) {
+                    $comparisons[] = [
+                        'item1' => $pw['kriteria_1'],
+                        'item2' => $pw['kriteria_2'],
+                        'value' => $pw['nilai']
+                    ];
+                }
 
-            $items = array_column($kriteria, 'id');
-            $ahp_result = AHP::processAHP($items, $comparisons);
+                $items = array_column($kriteria, 'id');
+                $ahp_result = AHP::processAHP($items, $comparisons);
 
-            // Update bobot kriteria
-            foreach ($kriteria as $index => $k) {
-                if (isset($ahp_result['weights'][$index])) {
-                    $kriteriaModel->updateBobot($k['id'], $ahp_result['weights'][$index]);
+                // Update bobot kriteria
+                foreach ($kriteria as $index => $k) {
+                    if (isset($ahp_result['weights'][$index])) {
+                        $kriteriaModel->updateBobot($k['id'], $ahp_result['weights'][$index]);
+                    }
                 }
             }
         }
@@ -702,5 +824,18 @@ class Admin extends Controller {
         ];
 
         $this->view('admin/visualisasi/index', $data);
+    }
+
+    // ========================================
+    // CARA KERJA AHP
+    // ========================================
+
+    public function caraKerjaAHP() {
+        $data = [
+            'title' => 'Cara Kerja Metode AHP - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF()
+        ];
+
+        $this->view('admin/cara_kerja_ahp', $data);
     }
 }

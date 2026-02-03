@@ -1,6 +1,64 @@
-# Sistem Pendukung Keputusan Penentuan Tema Tugas Akhir
+# 📚 Sistem Pendukung Keputusan Pemilihan Tema PKL
+## Menggunakan Metode AHP (Analytical Hierarchy Process)
 
-Aplikasi SPK menggunakan metode AHP (Analytic Hierarchy Process) untuk membantu mahasiswa PTIK UIN Sjech M. Djamil Djambek Bukittinggi dalam menentukan tema tugas akhir yang sesuai dengan minat dan kemampuan mereka.
+Aplikasi SPK berbasis web untuk membantu mahasiswa dalam menentukan tema Praktik Kerja Lapangan (PKL) yang sesuai dengan minat dan kemampuan akademik mereka menggunakan metode Analytical Hierarchy Process (AHP).
+
+---
+
+## 🎯 Tentang Aplikasi
+
+Sistem ini dirancang untuk memberikan rekomendasi objektif tema PKL berdasarkan:
+- ✅ Nilai akademik mahasiswa per mata kuliah
+- ✅ Bobot kriteria yang dihitung dengan metode AHP
+- ✅ Relevansi tema dengan kompetensi mahasiswa
+- ✅ Konsistensi perhitungan dengan uji CR (Consistency Ratio)
+
+**Deployment:** https://apkahp.demoj35.site
+
+---
+
+## 📚 DOKUMENTASI LENGKAP
+
+### 📖 Panduan Utama
+1. **[QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)** ⚡
+   - Instalasi cepat (5 menit)
+   - Setup aplikasi langkah per langkah
+   - Test & verifikasi sistem
+   - Troubleshooting umum
+
+2. **[DOKUMENTASI_LENGKAP.md](DOKUMENTASI_LENGKAP.md)** 📚
+   - Dokumentasi teknis lengkap
+   - Struktur aplikasi detail
+   - Alur pembuatan aplikasi (30 fase)
+   - Database schema & ERD
+   - API endpoints
+   - Security & best practices
+
+3. **[ALUR_KERJA_AHP.md](ALUR_KERJA_AHP.md)** 🔢
+   - Alur kerja metode AHP step-by-step
+   - Contoh perhitungan lengkap dengan angka
+   - Matrix & normalisasi
+   - Consistency check
+   - Visualisasi proses
+
+### 📋 Panduan Khusus
+4. **[SETUP_SUBDOMAIN.md](SETUP_SUBDOMAIN.md)** 🌐
+   - Deployment ke subdomain
+   - Konfigurasi .env untuk production
+   - Fix asset loading issues
+   - SSL & security setup
+
+5. **[DEBUG_PAIRWISE_ALTERNATIF.md](DEBUG_PAIRWISE_ALTERNATIF.md)** 🔧
+   - Debug guide pairwise comparison
+   - Testing procedures
+   - Common issues & solutions
+
+6. **[FIX_SUMMARY.md](FIX_SUMMARY.md)** ✅
+   - Summary of bug fixes
+   - Changelog & updates
+   - Fix details
+
+---
 
 ## 📋 Fitur Utama
 

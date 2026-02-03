@@ -46,7 +46,7 @@
                 Skala: 1 = Sama penting, 3 = Sedikit lebih penting, 5 = Lebih penting, 7 = Sangat penting, 9 = Mutlak lebih penting
             </div>
 
-            <form action="<?= url('admin/pairwiseAlternatif') ?>" method="POST">
+            <form action="<?= url('admin/savePairwiseAlternatif') ?>" method="POST">
                 <?= csrf_field() ?>
                 <input type="hidden" name="kriteria_id" value="<?= $selected_kriteria ?>">
 

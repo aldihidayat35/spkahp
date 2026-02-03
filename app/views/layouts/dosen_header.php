@@ -56,11 +56,11 @@
                     <i class="bi bi-file-earmark-text"></i> Laporan Rekomendasi
                 </a>
             </li>
-        </ul>
-        
-        <hr class="text-white">
-        
-        <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('dosen/caraKerjaAHP') ?>">
+                            <i class="bi bi-question-circle"></i> Cara Kerja AHP
+                        </a>
+                    </li>
             <li class="nav-item">
                 <a class="nav-link text-white" href="<?= url('auth/changePassword') ?>">
                     <i class="bi bi-key"></i> Ubah Password

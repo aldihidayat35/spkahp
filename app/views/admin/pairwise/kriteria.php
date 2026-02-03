@@ -1,5 +1,11 @@
 <?php require_once APP_PATH . '/views/layouts/admin_header.php'; ?>
 
+<?php
+// Check if fixed weights are enforced
+$ahp_settings = require ROOT_PATH . '/config/ahp_settings.php';
+$fixed_weights_enabled = !empty($ahp_settings['enforce_fixed_weights']);
+?>
+
 <div class="container-fluid px-4">
     <h1 class="mt-4">Pairwise Comparison Kriteria</h1>
     <ol class="breadcrumb mb-4">
@@ -7,17 +13,45 @@
         <li class="breadcrumb-item active">Pairwise Kriteria</li>
     </ol>
 
+    <?php if ($fixed_weights_enabled): ?>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Mode Bobot Tetap Aktif</h5>
+        <p>
+            Sistem saat ini menggunakan <strong>bobot kriteria tetap</strong> yang telah ditetapkan dalam konfigurasi.
+            Pairwise comparison pada halaman ini <strong>tidak akan mengubah bobot kriteria</strong>.
+        </p>
+        <hr>
+        <p class="mb-0">
+            <strong>Bobot yang digunakan:</strong>
+        </p>
+        <ul class="mb-0">
+            <?php foreach ($ahp_settings['fixed_kriteria'] as $name => $score): ?>
+            <li><?= ucwords($name) ?> = <strong><?= $score ?></strong></li>
+            <?php endforeach; ?>
+        </ul>
+        <p class="mb-0 mt-2">
+            <small>Untuk menggunakan pairwise comparison, ubah <code>enforce_fixed_weights</code> menjadi <code>false</code> di file <code>config/ahp_settings.php</code></small>
+        </p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endif; ?>
+
     <?php if (!empty($kriteria) && count($kriteria) >= 2): ?>
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
             <i class="bi bi-grid-3x3-gap me-1"></i>
             Matriks Perbandingan Berpasangan
+            <?php if ($fixed_weights_enabled): ?>
+            <span class="badge bg-warning text-dark float-end">Preview Mode - Tidak Akan Digunakan</span>
+            <?php endif; ?>
         </div>
         <div class="card-body">
+            <?php if (!$fixed_weights_enabled): ?>
             <div class="alert alert-info">
                 <strong>Petunjuk:</strong> Masukkan nilai perbandingan antar kriteria.<br>
                 Skala: 1 = Sama penting, 3 = Sedikit lebih penting, 5 = Lebih penting, 7 = Sangat penting, 9 = Mutlak lebih penting
             </div>
+            <?php endif; ?>
 
             <form action="<?= url('admin/pairwiseKriteria') ?>" method="POST">
                 <?= csrf_field() ?>
