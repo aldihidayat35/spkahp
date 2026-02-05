@@ -457,6 +457,7 @@ class Admin extends Controller {
             $data = [
                 'kode' => strtoupper(trim(post('kode'))),
                 'nama_matkul' => trim(post('nama_matkul')),
+                'kurikulum_id' => post('kurikulum_id') ?: null,
                 'kriteria_id' => post('kriteria_id'),
                 'bobot_matkul' => post('bobot_matkul') ?: 1
             ];
@@ -472,11 +473,15 @@ class Admin extends Controller {
         } else {
             $kriteriaModel = $this->model('KriteriaModel');
             $kriteria = $kriteriaModel->getAllActive();
+            
+            $kurikulumModel = $this->model('KurikulumModel');
+            $kurikulum = $kurikulumModel->getAll();
 
             $data = [
                 'title' => 'Tambah Mata Kuliah - ' . APP_NAME,
                 'csrf_token' => $this->generateCSRF(),
-                'kriteria' => $kriteria
+                'kriteria' => $kriteria,
+                'kurikulum' => $kurikulum
             ];
 
             $this->view('admin/matakuliah/form', $data);
@@ -492,6 +497,7 @@ class Admin extends Controller {
             $data = [
                 'kode' => strtoupper(trim(post('kode'))),
                 'nama_matkul' => trim(post('nama_matkul')),
+                'kurikulum_id' => post('kurikulum_id') ?: null,
                 'kriteria_id' => post('kriteria_id'),
                 'bobot_matkul' => post('bobot_matkul') ?: 1
             ];
@@ -506,6 +512,10 @@ class Admin extends Controller {
         } else {
             $kriteriaModel = $this->model('KriteriaModel');
             $kriteria = $kriteriaModel->getAllActive();
+            
+            $kurikulumModel = $this->model('KurikulumModel');
+            $kurikulum = $kurikulumModel->getAll();
+            
             $matakuliah = $matkulModel->findById($id);
 
             if (!$matakuliah) {
@@ -518,6 +528,7 @@ class Admin extends Controller {
                 'title' => 'Edit Mata Kuliah - ' . APP_NAME,
                 'csrf_token' => $this->generateCSRF(),
                 'kriteria' => $kriteria,
+                'kurikulum' => $kurikulum,
                 'matakuliah' => $matakuliah
             ];
 
@@ -837,5 +848,154 @@ class Admin extends Controller {
         ];
 
         $this->view('admin/cara_kerja_ahp', $data);
+    }
+
+    // ========================================
+    // KELOLA KURIKULUM
+    // ========================================
+
+    public function kurikulum() {
+        $kurikulumModel = $this->model('KurikulumModel');
+        $kurikulum = $kurikulumModel->getAll();
+        
+        // Add counts for each kurikulum
+        foreach ($kurikulum as &$k) {
+            $k['jumlah_matkul'] = $kurikulumModel->countMataKuliah($k['id']);
+            $k['jumlah_mahasiswa'] = $kurikulumModel->countMahasiswa($k['id']);
+        }
+
+        $data = [
+            'title' => 'Kelola Kurikulum - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF(),
+            'kurikulum' => $kurikulum
+        ];
+
+        $this->view('admin/kurikulum/index', $data);
+    }
+
+    public function addKurikulum() {
+        if ($this->isPost()) {
+            $this->validateCSRF();
+            
+            $kurikulumModel = $this->model('KurikulumModel');
+            
+            $data = [
+                'angkatan' => trim(post('angkatan')),
+                'nama_kurikulum' => trim(post('nama_kurikulum')),
+                'tahun_berlaku' => trim(post('tahun_berlaku')),
+                'keterangan' => trim(post('keterangan'))
+            ];
+            
+            if ($kurikulumModel->create($data)) {
+                setFlash('success', 'Kurikulum berhasil ditambahkan.', 'success');
+            } else {
+                setFlash('error', 'Gagal menambahkan kurikulum.', 'error');
+            }
+            
+            redirect('admin/kurikulum');
+            return;
+        }
+
+        $data = [
+            'title' => 'Tambah Kurikulum - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF()
+        ];
+
+        $this->view('admin/kurikulum/form', $data);
+    }
+
+    public function editKurikulum($id) {
+        $kurikulumModel = $this->model('KurikulumModel');
+        $kurikulum = $kurikulumModel->getById($id);
+
+        if (!$kurikulum) {
+            setFlash('error', 'Kurikulum tidak ditemukan.', 'error');
+            redirect('admin/kurikulum');
+            return;
+        }
+
+        if ($this->isPost()) {
+            $this->validateCSRF();
+            
+            $data = [
+                'angkatan' => trim(post('angkatan')),
+                'nama_kurikulum' => trim(post('nama_kurikulum')),
+                'tahun_berlaku' => trim(post('tahun_berlaku')),
+                'keterangan' => trim(post('keterangan'))
+            ];
+            
+            if ($kurikulumModel->update($id, $data)) {
+                setFlash('success', 'Kurikulum berhasil diperbarui.', 'success');
+            } else {
+                setFlash('error', 'Gagal memperbarui kurikulum.', 'error');
+            }
+            
+            redirect('admin/kurikulum');
+            return;
+        }
+
+        $data = [
+            'title' => 'Edit Kurikulum - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF(),
+            'kurikulum' => $kurikulum
+        ];
+
+        $this->view('admin/kurikulum/form', $data);
+    }
+
+    public function deleteKurikulum($id) {
+        $kurikulumModel = $this->model('KurikulumModel');
+        
+        // Check if used
+        $countMahasiswa = $kurikulumModel->countMahasiswa($id);
+        $countMatkul = $kurikulumModel->countMataKuliah($id);
+        
+        if ($countMahasiswa > 0 || $countMatkul > 0) {
+            setFlash('error', 'Kurikulum tidak dapat dihapus karena masih digunakan oleh ' . 
+                     ($countMahasiswa > 0 ? "$countMahasiswa mahasiswa" : '') . 
+                     ($countMahasiswa > 0 && $countMatkul > 0 ? ' dan ' : '') .
+                     ($countMatkul > 0 ? "$countMatkul mata kuliah" : '') . '.', 'error');
+        } else {
+            if ($kurikulumModel->delete($id)) {
+                setFlash('success', 'Kurikulum berhasil dihapus.', 'success');
+            } else {
+                setFlash('error', 'Gagal menghapus kurikulum.', 'error');
+            }
+        }
+        
+        redirect('admin/kurikulum');
+    }
+
+    public function detailKurikulum($id) {
+        $kurikulumModel = $this->model('KurikulumModel');
+        $kurikulum = $kurikulumModel->getById($id);
+
+        if (!$kurikulum) {
+            setFlash('error', 'Kurikulum tidak ditemukan.', 'error');
+            redirect('admin/kurikulum');
+            return;
+        }
+
+        $mataKuliah = $kurikulumModel->getMataKuliah($id);
+        
+        // Get mahasiswa using this kurikulum
+        $query = "SELECT m.*, u.username FROM mahasiswa m 
+                  JOIN users u ON m.user_id = u.id 
+                  WHERE m.kurikulum_id = :kurikulum_id
+                  ORDER BY m.angkatan DESC, m.nama ASC";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':kurikulum_id', $id);
+        $stmt->execute();
+        $mahasiswa = $stmt->fetchAll();
+
+        $data = [
+            'title' => 'Detail Kurikulum - ' . APP_NAME,
+            'csrf_token' => $this->generateCSRF(),
+            'kurikulum' => $kurikulum,
+            'mataKuliah' => $mataKuliah,
+            'mahasiswa' => $mahasiswa
+        ];
+
+        $this->view('admin/kurikulum/detail', $data);
     }
 }

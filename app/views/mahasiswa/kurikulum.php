@@ -216,4 +216,4 @@
     </div>
 </div>
 
-<?php require_once APP_PATH . '/views/layouts/footer.php'; ?>
+<?php require_once APP_PATH . '/views/layouts/mahasiswa_footer.php'; ?>

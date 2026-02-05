@@ -6,6 +6,20 @@
 
 <div class="row">
     <div class="col-12">
+        <?php if ($kurikulum): ?>
+        <div class="alert alert-success">
+            <i class="bi bi-book"></i> <strong>Kurikulum Anda:</strong> 
+            <?= htmlspecialchars($kurikulum['nama_kurikulum']) ?> (Angkatan <?= htmlspecialchars($mahasiswa['angkatan']) ?>)
+            <br>
+            <small class="text-muted">Mata kuliah yang ditampilkan disesuaikan dengan kurikulum Anda</small>
+        </div>
+        <?php else: ?>
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> <strong>Peringatan:</strong> 
+            Anda belum memiliki kurikulum yang terdaftar. Silakan hubungi admin.
+        </div>
+        <?php endif; ?>
+        
         <div class="card shadow">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">Form Input Nilai</h5>

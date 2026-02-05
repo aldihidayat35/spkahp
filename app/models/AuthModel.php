@@ -106,14 +106,27 @@ class AuthModel {
 
             // If mahasiswa, insert to mahasiswa table
             if ($data['role'] === 'mahasiswa') {
-                $query = "INSERT INTO mahasiswa (user_id, nim, nama, angkatan, minat_utama, email, no_hp) 
-                         VALUES (:user_id, :nim, :nama, :angkatan, :minat_utama, :email, :no_hp)";
+                // Auto-assign kurikulum berdasarkan angkatan
+                $kurikulum_id = null;
+                $query_kur = "SELECT id FROM kurikulum WHERE angkatan = :angkatan LIMIT 1";
+                $stmt_kur = $this->db->prepare($query_kur);
+                $stmt_kur->bindParam(':angkatan', $data['angkatan']);
+                $stmt_kur->execute();
+                $kurikulum = $stmt_kur->fetch();
+                
+                if ($kurikulum) {
+                    $kurikulum_id = $kurikulum['id'];
+                }
+                
+                $query = "INSERT INTO mahasiswa (user_id, nim, nama, angkatan, kurikulum_id, minat_utama, email, no_hp) 
+                         VALUES (:user_id, :nim, :nama, :angkatan, :kurikulum_id, :minat_utama, :email, :no_hp)";
                 
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':user_id', $user_id);
                 $stmt->bindParam(':nim', $data['nim']);
                 $stmt->bindParam(':nama', $data['nama']);
                 $stmt->bindParam(':angkatan', $data['angkatan']);
+                $stmt->bindParam(':kurikulum_id', $kurikulum_id);
                 $stmt->bindParam(':minat_utama', $data['minat_utama']);
                 $stmt->bindParam(':email', $data['email']);
                 $stmt->bindParam(':no_hp', $data['no_hp']);

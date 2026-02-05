@@ -22,6 +22,7 @@
                             <th>No</th>
                             <th>Kode</th>
                             <th>Nama Mata Kuliah</th>
+                            <th>Kurikulum</th>
                             <th>Kriteria</th>
                             <th>Bobot</th>
                             <th>Status</th>
@@ -35,6 +36,13 @@
                                 <td><?= $no++ ?></td>
                                 <td><strong><?= escape($mk['kode']) ?></strong></td>
                                 <td><?= escape($mk['nama_matkul']) ?></td>
+                                <td>
+                                    <?php if ($mk['nama_kurikulum']): ?>
+                                        <span class="badge bg-primary"><?= escape($mk['nama_kurikulum']) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if ($mk['nama_kriteria']): ?>
                                         <span class="badge bg-info"><?= escape($mk['nama_kriteria']) ?></span>

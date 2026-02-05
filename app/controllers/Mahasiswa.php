@@ -70,8 +70,19 @@ class Mahasiswa extends Controller {
 
     public function inputNilai() {
         $mahasiswa_id = $_SESSION['mahasiswa_id'];
+        
+        // Get mahasiswa data to get kurikulum_id
+        $mahasiswa = $this->mahasiswaModel->findById($mahasiswa_id);
+        
+        // Get mata kuliah filtered by kurikulum
         $matkulModel = $this->model('MataKuliahModel');
-        $matakuliah = $matkulModel->getAllActive();
+        if ($mahasiswa && $mahasiswa['kurikulum_id']) {
+            // Filter by kurikulum
+            $matakuliah = $matkulModel->getByKurikulum($mahasiswa['kurikulum_id']);
+        } else {
+            // Fallback: show all if no kurikulum assigned
+            $matakuliah = $matkulModel->getAllActive();
+        }
 
         // Get existing nilai
         $nilai_existing = $this->mahasiswaModel->getNilaiMatkul($mahasiswa_id);
@@ -118,12 +129,21 @@ class Mahasiswa extends Controller {
                 $matkul_by_kriteria[$kriteria_id]['matakuliah'][] = $mk;
             }
 
+            // Get kurikulum info
+            $kurikulumModel = $this->model('KurikulumModel');
+            $kurikulum = null;
+            if ($mahasiswa && $mahasiswa['kurikulum_id']) {
+                $kurikulum = $kurikulumModel->getById($mahasiswa['kurikulum_id']);
+            }
+
             $data = [
                 'title' => 'Input Nilai Mata Kuliah - ' . APP_NAME,
                 'csrf_token' => $this->generateCSRF(),
                 'matakuliah' => $matakuliah,
                 'nilai_map' => $nilai_map,
-                'matkul_by_kriteria' => $matkul_by_kriteria
+                'matkul_by_kriteria' => $matkul_by_kriteria,
+                'kurikulum' => $kurikulum,
+                'mahasiswa' => $mahasiswa
             ];
 
             $this->view('mahasiswa/input_nilai', $data);

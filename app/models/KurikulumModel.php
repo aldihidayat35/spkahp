@@ -13,21 +13,7 @@ class KurikulumModel {
      */
     public function getAll() {
         try {
-            $query = "SELECT * FROM kurikulum ORDER BY tahun_mulai DESC";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute();
-            return $stmt->fetchAll();
-        } catch (PDOException $e) {
-            return [];
-        }
-    }
-
-    /**
-     * Get active kurikulum
-     */
-    public function getAllActive() {
-        try {
-            $query = "SELECT * FROM kurikulum WHERE is_active = 1 ORDER BY tahun_mulai DESC";
+            $query = "SELECT * FROM kurikulum ORDER BY angkatan DESC";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll();
@@ -52,15 +38,11 @@ class KurikulumModel {
     }
 
     /**
-     * Get kurikulum by angkatan
+     * Get kurikulum by angkatan (auto-assign logic)
      */
     public function getByAngkatan($angkatan) {
         try {
-            $query = "SELECT * FROM kurikulum 
-                     WHERE tahun_mulai <= :angkatan 
-                     AND (tahun_akhir IS NULL OR tahun_akhir >= :angkatan)
-                     AND is_active = 1
-                     LIMIT 1";
+            $query = "SELECT * FROM kurikulum WHERE angkatan = :angkatan LIMIT 1";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':angkatan', $angkatan);
             $stmt->execute();
@@ -75,15 +57,18 @@ class KurikulumModel {
      */
     public function create($data) {
         try {
-            $query = "INSERT INTO kurikulum (nama_kurikulum, tahun_mulai, tahun_akhir, deskripsi, is_active) 
-                     VALUES (:nama, :tahun_mulai, :tahun_akhir, :deskripsi, :is_active)";
+            $query = "INSERT INTO kurikulum (angkatan, nama_kurikulum, tahun_berlaku, keterangan) 
+                     VALUES (:angkatan, :nama_kurikulum, :tahun_berlaku, :keterangan)";
             $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':nama', $data['nama_kurikulum']);
-            $stmt->bindParam(':tahun_mulai', $data['tahun_mulai']);
-            $stmt->bindParam(':tahun_akhir', $data['tahun_akhir']);
-            $stmt->bindParam(':deskripsi', $data['deskripsi']);
-            $stmt->bindParam(':is_active', $data['is_active']);
-            return $stmt->execute();
+            $stmt->bindParam(':angkatan', $data['angkatan']);
+            $stmt->bindParam(':nama_kurikulum', $data['nama_kurikulum']);
+            $stmt->bindParam(':tahun_berlaku', $data['tahun_berlaku']);
+            $stmt->bindParam(':keterangan', $data['keterangan']);
+            
+            if ($stmt->execute()) {
+                return $this->db->lastInsertId();
+            }
+            return false;
         } catch (PDOException $e) {
             return false;
         }
@@ -95,20 +80,53 @@ class KurikulumModel {
     public function update($id, $data) {
         try {
             $query = "UPDATE kurikulum SET 
-                     nama_kurikulum = :nama,
-                     tahun_mulai = :tahun_mulai,
-                     tahun_akhir = :tahun_akhir,
-                     deskripsi = :deskripsi,
-                     is_active = :is_active,
+                     angkatan = :angkatan,
+                     nama_kurikulum = :nama_kurikulum,
+                     tahun_berlaku = :tahun_berlaku,
+                     keterangan = :keterangan,
                      updated_at = NOW()
                      WHERE id = :id";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':id', $id);
-            $stmt->bindParam(':nama', $data['nama_kurikulum']);
-            $stmt->bindParam(':tahun_mulai', $data['tahun_mulai']);
-            $stmt->bindParam(':tahun_akhir', $data['tahun_akhir']);
-            $stmt->bindParam(':deskripsi', $data['deskripsi']);
-            $stmt->bindParam(':is_active', $data['is_active']);
+            $stmt->bindParam(':angkatan', $data['angkatan']);
+            $stmt->bindParam(':nama_kurikulum', $data['nama_kurikulum']);
+            $stmt->bindParam(':tahun_berlaku', $data['tahun_berlaku']);
+            $stmt->bindParam(':keterangan', $data['keterangan']);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Delete kurikulum
+     */
+    public function delete($id) {
+        try {
+            // Check if used by mahasiswa or mata kuliah
+            $query = "SELECT COUNT(*) as count FROM mahasiswa WHERE kurikulum_id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            
+            if ($result['count'] > 0) {
+                return false; // Cannot delete, used by mahasiswa
+            }
+            
+            $query = "SELECT COUNT(*) as count FROM mata_kuliah WHERE kurikulum_id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            
+            if ($result['count'] > 0) {
+                return false; // Cannot delete, used by mata kuliah
+            }
+            
+            $query = "DELETE FROM kurikulum WHERE id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id', $id);
             return $stmt->execute();
         } catch (PDOException $e) {
             return false;
@@ -120,11 +138,10 @@ class KurikulumModel {
      */
     public function getMataKuliah($kurikulum_id) {
         try {
-            $query = "SELECT mk.*, mkk.semester, mkk.is_wajib, mkk.id as matkul_kurikulum_id
-                     FROM matkul_kurikulum mkk
-                     JOIN mata_kuliah mk ON mkk.matkul_id = mk.id
-                     WHERE mkk.kurikulum_id = :kurikulum_id
-                     ORDER BY mkk.semester ASC, mk.nama_matkul ASC";
+            $query = "SELECT mk.* 
+                     FROM mata_kuliah mk
+                     WHERE mk.kurikulum_id = :kurikulum_id AND mk.is_active = 1
+                     ORDER BY mk.nama_matkul ASC";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':kurikulum_id', $kurikulum_id);
             $stmt->execute();
@@ -135,34 +152,34 @@ class KurikulumModel {
     }
 
     /**
-     * Add mata kuliah to kurikulum
+     * Count mata kuliah in kurikulum
      */
-    public function addMataKuliah($kurikulum_id, $matkul_id, $semester, $is_wajib = 1) {
+    public function countMataKuliah($kurikulum_id) {
         try {
-            $query = "INSERT INTO matkul_kurikulum (kurikulum_id, matkul_id, semester, is_wajib) 
-                     VALUES (:kurikulum_id, :matkul_id, :semester, :is_wajib)";
+            $query = "SELECT COUNT(*) as count FROM mata_kuliah WHERE kurikulum_id = :kurikulum_id";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':kurikulum_id', $kurikulum_id);
-            $stmt->bindParam(':matkul_id', $matkul_id);
-            $stmt->bindParam(':semester', $semester);
-            $stmt->bindParam(':is_wajib', $is_wajib);
-            return $stmt->execute();
+            $stmt->execute();
+            $result = $stmt->fetch();
+            return $result['count'];
         } catch (PDOException $e) {
-            return false;
+            return 0;
         }
     }
 
     /**
-     * Remove mata kuliah from kurikulum
+     * Count mahasiswa in kurikulum
      */
-    public function removeMataKuliah($matkul_kurikulum_id) {
+    public function countMahasiswa($kurikulum_id) {
         try {
-            $query = "DELETE FROM matkul_kurikulum WHERE id = :id";
+            $query = "SELECT COUNT(*) as count FROM mahasiswa WHERE kurikulum_id = :kurikulum_id";
             $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':id', $matkul_kurikulum_id);
-            return $stmt->execute();
+            $stmt->bindParam(':kurikulum_id', $kurikulum_id);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            return $result['count'];
         } catch (PDOException $e) {
-            return false;
+            return 0;
         }
     }
 }

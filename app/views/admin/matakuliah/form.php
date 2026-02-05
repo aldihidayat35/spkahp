@@ -34,6 +34,22 @@
                         </div>
 
                         <div class="mb-3">
+                            <label class="form-label">Kurikulum <span class="text-danger">*</span></label>
+                            <select name="kurikulum_id" class="form-select" required>
+                                <option value="">-- Pilih Kurikulum --</option>
+                                <?php if (!empty($kurikulum)): ?>
+                                    <?php foreach ($kurikulum as $kur): ?>
+                                        <option value="<?= $kur['id'] ?>" 
+                                                <?= old('kurikulum_id', $matakuliah['kurikulum_id'] ?? '') == $kur['id'] ? 'selected' : '' ?>>
+                                            <?= escape($kur['nama_kurikulum']) ?> (Angkatan <?= escape($kur['angkatan']) ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                            <small class="text-muted">Pilih kurikulum yang sesuai dengan mata kuliah ini</small>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">Kriteria <span class="text-danger">*</span></label>
                             <select name="kriteria_id" class="form-select" required>
                                 <option value="">-- Pilih Kriteria --</option>

@@ -59,6 +59,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white" href="<?= url('admin/kurikulum') ?>">
+                            <i class="bi bi-journals"></i> Kurikulum
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-white" href="<?= url('admin/matakuliah') ?>">
                             <i class="bi bi-book"></i> Mata Kuliah
                         </a>
