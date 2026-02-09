@@ -3,7 +3,7 @@
 return [
     // When true, the system will use these fixed criterion scores and
     // normalize them to produce final criterion weights used by the SPK.
-    'enforce_fixed_weights' => true,
+    'enforce_fixed_weights' => false,
 
     // Raw scores for each criterion (the values you provided).
     // Matching is case-insensitive and will try substring matches on `nama_kriteria`.

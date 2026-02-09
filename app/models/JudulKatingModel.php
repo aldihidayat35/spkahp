@@ -13,9 +13,9 @@ class JudulKatingModel {
      */
     public function getAll($tahun = null) {
         try {
-            $query = "SELECT jk.*, a.nama_alternatif as tema_nama 
+            $query = "SELECT jk.*, a.nama_tema as tema_nama 
                      FROM judul_kating jk
-                     LEFT JOIN alternatif a ON jk.tema_id = a.id";
+                     LEFT JOIN alternatif_tema a ON jk.tema_id = a.id";
             
             if ($tahun) {
                 $query .= " WHERE jk.tahun = :tahun";
@@ -39,9 +39,9 @@ class JudulKatingModel {
      */
     public function search($keyword, $tahun = null) {
         try {
-            $query = "SELECT jk.*, a.nama_alternatif as tema_nama 
+            $query = "SELECT jk.*, a.nama_tema as tema_nama 
                      FROM judul_kating jk
-                     LEFT JOIN alternatif a ON jk.tema_id = a.id
+                     LEFT JOIN alternatif_tema a ON jk.tema_id = a.id
                      WHERE (jk.judul LIKE :keyword 
                         OR jk.nama_mahasiswa LIKE :keyword
                         OR jk.nim LIKE :keyword)";

@@ -84,7 +84,12 @@ $fixed_weights_enabled = !empty($ahp_settings['enforce_fixed_weights']);
                                         <a href="<?= url('admin/editKriteria/' . $k['id']) ?>" class="btn btn-warning">
                                             <i class="bi bi-pencil"></i> Edit
                                         </a>
-                                        <!-- Kriteria tidak dapat dihapus untuk menjaga integritas sistem -->
+                                        <form action="<?= url('admin/deleteKriteria/' . $k['id']) ?>" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus kriteria ini? Data pairwise terkait juga akan terhapus.')">
+                                            <?= csrf_field() ?>
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

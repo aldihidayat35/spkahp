@@ -35,6 +35,46 @@
                         <p class="mb-0"><?= APP_NAME ?></p>
                     </div>
                     <div class="card-body p-5">
+                        <?php 
+                        $flash_error = getFlash('error');
+                        if ($flash_error): ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <?= $flash_error['message'] ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php 
+                        $flash_success = getFlash('success');
+                        if ($flash_success): ?>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <?= $flash_success['message'] ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php
+                        // Show field-specific errors
+                        $field_errors = [];
+                        foreach (['username', 'nama', 'nim', 'angkatan', 'email'] as $field) {
+                            $fe = getFlash('error_' . $field);
+                            if ($fe) $field_errors[] = $fe['message'];
+                        }
+                        if (!empty($field_errors)): ?>
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            <strong>Mohon perbaiki:</strong>
+                            <ul class="mb-0 mt-1">
+                                <?php foreach ($field_errors as $err): ?>
+                                <li><?= $err ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <?php endif; ?>
+
                         <form action="<?= url('auth/register') ?>" method="POST">
                             <?= csrf_field() ?>
 
@@ -45,7 +85,7 @@
                                     </label>
                                     <input type="text" name="username" class="form-control" 
                                            value="<?= old('username') ?>"
-                                           placeholder="Username untuk login" required>
+                                           placeholder="Username untuk login (min. 4 karakter)" required>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
@@ -54,6 +94,7 @@
                                     </label>
                                     <input type="password" name="password" class="form-control" 
                                            placeholder="Password" required>
+                                    <small class="text-muted">Min. 8 karakter, harus mengandung huruf besar, huruf kecil, dan angka</small>
                                 </div>
                             </div>
 

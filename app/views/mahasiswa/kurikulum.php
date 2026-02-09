@@ -15,37 +15,24 @@
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <strong>Nama Kurikulum:</strong>
                     <p><?= escape($kurikulum['nama_kurikulum']) ?></p>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <strong>Angkatan Anda:</strong>
                     <p><span class="badge bg-info"><?= $angkatan ?></span></p>
                 </div>
-                <div class="col-md-3">
-                    <strong>Periode Berlaku:</strong>
-                    <p>
-                        <?= $kurikulum['tahun_mulai'] ?> 
-                        <?= $kurikulum['tahun_akhir'] ? ' - ' . $kurikulum['tahun_akhir'] : ' - Sekarang' ?>
-                    </p>
-                </div>
-                <div class="col-md-3">
-                    <strong>Status:</strong>
-                    <p>
-                        <?php if ($kurikulum['is_active']): ?>
-                        <span class="badge bg-success">Aktif</span>
-                        <?php else: ?>
-                        <span class="badge bg-secondary">Tidak Aktif</span>
-                        <?php endif; ?>
-                    </p>
+                <div class="col-md-4">
+                    <strong>Tahun Berlaku:</strong>
+                    <p><?= escape($kurikulum['tahun_berlaku'] ?? '-') ?></p>
                 </div>
             </div>
-            <?php if (!empty($kurikulum['deskripsi'])): ?>
+            <?php if (!empty($kurikulum['keterangan'])): ?>
             <hr>
             <div>
-                <strong>Deskripsi:</strong>
-                <p class="mb-0"><?= nl2br(escape($kurikulum['deskripsi'])) ?></p>
+                <strong>Keterangan:</strong>
+                <p class="mb-0"><?= nl2br(escape($kurikulum['keterangan'])) ?></p>
             </div>
             <?php endif; ?>
         </div>
@@ -200,20 +187,6 @@
         </div>
     </div>
     <?php endif; ?>
-
-    <!-- Info Card -->
-    <div class="card mt-4 border-warning">
-        <div class="card-body">
-            <h6 class="card-title"><i class="bi bi-info-circle text-info"></i> Informasi</h6>
-            <ul class="mb-0">
-                <li><strong>Mata Kuliah Wajib:</strong> Harus diambil dan diselesaikan oleh semua mahasiswa</li>
-                <li><strong>Mata Kuliah Pilihan:</strong> Dapat dipilih sesuai minat dan ketersediaan</li>
-                <li><strong>SKS (Satuan Kredit Semester):</strong> 1 SKS = 50 menit kuliah per minggu</li>
-                <li>Pastikan Anda mengambil mata kuliah sesuai dengan semester dan prasyarat yang berlaku</li>
-                <li>Konsultasikan dengan dosen wali jika ada pertanyaan tentang kurikulum</li>
-            </ul>
-        </div>
-    </div>
 </div>
 
 <?php require_once APP_PATH . '/views/layouts/mahasiswa_footer.php'; ?>

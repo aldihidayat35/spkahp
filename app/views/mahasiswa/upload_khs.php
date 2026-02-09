@@ -27,40 +27,18 @@
             <form action="<?= url('mahasiswa/prosesUploadKHS') ?>" method="POST" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="semester" class="form-label">Semester <span class="text-danger">*</span></label>
-                            <select class="form-select" id="semester" name="semester" required>
-                                <option value="">-- Pilih Semester --</option>
-                                <?php for($i=1; $i<=8; $i++): ?>
-                                <option value="<?= $i ?>">Semester <?= $i ?></option>
-                                <?php endfor; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="tahun_akademik" class="form-label">Tahun Akademik <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="tahun_akademik" name="tahun_akademik" 
-                                   placeholder="Contoh: 2023/2024" required>
-                            <small class="text-muted">Format: YYYY/YYYY</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="file_khs" class="form-label">File KHS <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="file_khs" name="file_khs" 
-                           accept=".pdf,.jpg,.jpeg,.png" required>
-                    <small class="text-muted">
+                <div class=\"mb-3\">
+                    <label for=\"file_khs\" class=\"form-label\">File KHS <span class=\"text-danger\">*</span></label>
+                    <input type=\"file\" class=\"form-control\" id=\"file_khs\" name=\"file_khs\" 
+                           accept=\".pdf,.jpg,.jpeg,.png\" required>
+                    <small class=\"text-muted\">
                         Format: PDF, JPG, JPEG, PNG | Maksimal: 5 MB
                     </small>
                 </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-upload"></i> Upload KHS
+                <div class=\"d-grid gap-2 d-md-flex justify-content-md-end\">
+                    <button type=\"submit\" class=\"btn btn-primary\">
+                        <i class=\"bi bi-upload\"></i> Upload KHS
                     </button>
                 </div>
             </form>

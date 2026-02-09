@@ -40,14 +40,6 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Icon (Font Awesome)</label>
-                            <input type="text" name="icon" class="form-control" 
-                                   value="<?= old('icon', $alternatif['icon'] ?? '') ?>" 
-                                   placeholder="Contoh: fa-code atau bi-code-square">
-                            <small class="text-muted">Gunakan class Font Awesome atau Bootstrap Icons</small>
-                        </div>
-
-                        <div class="mb-3">
                             <div class="form-check">
                                 <input type="checkbox" name="is_active" value="1" class="form-check-input" 
                                        <?= old('is_active', $alternatif['is_active'] ?? 1) ? 'checked' : '' ?>>

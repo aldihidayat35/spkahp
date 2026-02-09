@@ -292,6 +292,83 @@
                 </div>
             </div>
             <?php endif; ?>
+
+            <!-- KHS Files -->
+            <div class="card stat-card-metronic mt-4">
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <h3 class="fw-bold m-0" style="color: #1e1e2d;">
+                            <i class="bi bi-file-earmark-pdf me-2" style="color: #f1416c;"></i>Dokumen KHS
+                        </h3>
+                    </div>
+                    <div class="card-toolbar">
+                        <span class="badge badge-primary fs-6"><?= count($khs_list ?? []) ?> File</span>
+                    </div>
+                </div>
+                <div class="card-body py-4">
+                    <?php if (!empty($khs_list)): ?>
+                        <div class="table-responsive">
+                            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                                <thead>
+                                    <tr class="fw-bold text-muted">
+                                        <th>No</th>
+                                        <th>Nama File</th>
+                                        <th>Semester</th>
+                                        <th>Tahun Akademik</th>
+                                        <th>Ukuran</th>
+                                        <th>Tanggal Upload</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $no = 1; foreach ($khs_list as $khs): ?>
+                                    <tr>
+                                        <td><?= $no++ ?></td>
+                                        <td>
+                                            <i class="bi bi-file-earmark-pdf text-danger me-1"></i>
+                                            <?= escape($khs['file_name']) ?>
+                                        </td>
+                                        <td><?= $khs['semester'] ? 'Semester ' . $khs['semester'] : '-' ?></td>
+                                        <td><?= escape($khs['tahun_akademik'] ?? '-') ?></td>
+                                        <td><?= number_format(($khs['file_size'] ?? 0) / 1024, 2) ?> KB</td>
+                                        <td><?= date('d/m/Y H:i', strtotime($khs['upload_date'])) ?></td>
+                                        <td>
+                                            <?php if ($khs['verified']): ?>
+                                                <span class="badge badge-light-success fw-bold">
+                                                    <i class="bi bi-check-circle me-1"></i>Terverifikasi
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="badge badge-light-warning fw-bold">
+                                                    <i class="bi bi-clock me-1"></i>Menunggu
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <a href="<?= url($khs['file_path']) ?>" target="_blank" class="btn btn-sm btn-info">
+                                                <i class="bi bi-eye"></i> Lihat
+                                            </a>
+                                            <a href="<?= url($khs['file_path']) ?>" download class="btn btn-sm btn-success">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-10">
+                            <div class="symbol symbol-100px symbol-circle mb-5" style="margin: 0 auto;">
+                                <div class="symbol-label bg-light-danger">
+                                    <i class="bi bi-file-earmark-x fs-1 text-danger"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-500 fs-4 fw-semibold">Belum ada file KHS yang diupload</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -13,9 +13,9 @@ class MahasiswaJudulModel {
      */
     public function getByMahasiswa($mahasiswa_id) {
         try {
-            $query = "SELECT mj.*, a.nama_alternatif as tema_nama 
+            $query = "SELECT mj.*, a.nama_tema as tema_nama 
                      FROM mahasiswa_judul mj
-                     LEFT JOIN alternatif a ON mj.tema_id = a.id
+                     LEFT JOIN alternatif_tema a ON mj.tema_id = a.id
                      WHERE mj.mahasiswa_id = :mahasiswa_id
                      ORDER BY mj.created_at DESC";
             $stmt = $this->db->prepare($query);
@@ -32,9 +32,9 @@ class MahasiswaJudulModel {
      */
     public function getById($id) {
         try {
-            $query = "SELECT mj.*, a.nama_alternatif as tema_nama 
+            $query = "SELECT mj.*, a.nama_tema as tema_nama 
                      FROM mahasiswa_judul mj
-                     LEFT JOIN alternatif a ON mj.tema_id = a.id
+                     LEFT JOIN alternatif_tema a ON mj.tema_id = a.id
                      WHERE mj.id = :id";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':id', $id);
@@ -133,10 +133,10 @@ class MahasiswaJudulModel {
      */
     public function getAll($status = null) {
         try {
-            $query = "SELECT mj.*, u.nama as mahasiswa_nama, u.username, a.nama_alternatif as tema_nama
+            $query = "SELECT mj.*, u.nama as mahasiswa_nama, u.username, a.nama_tema as tema_nama
                      FROM mahasiswa_judul mj
                      JOIN users u ON mj.mahasiswa_id = u.id
-                     LEFT JOIN alternatif a ON mj.tema_id = a.id";
+                     LEFT JOIN alternatif_tema a ON mj.tema_id = a.id";
             
             if ($status) {
                 $query .= " WHERE mj.status = :status";

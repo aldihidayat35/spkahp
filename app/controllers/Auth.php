@@ -59,9 +59,32 @@ class Auth extends Controller {
         if ($this->isPost()) {
             $this->validateCSRF();
 
+            $raw_password = post('password');
+
+            // Password validation first (before hashing)
+            $password_errors = [];
+            if (empty($raw_password)) {
+                $password_errors[] = 'Password harus diisi';
+            } elseif (strlen($raw_password) < 8) {
+                $password_errors[] = 'Password minimal 8 karakter';
+            } elseif (!preg_match('/[A-Z]/', $raw_password)) {
+                $password_errors[] = 'Password harus mengandung minimal 1 huruf besar';
+            } elseif (!preg_match('/[a-z]/', $raw_password)) {
+                $password_errors[] = 'Password harus mengandung minimal 1 huruf kecil';
+            } elseif (!preg_match('/[0-9]/', $raw_password)) {
+                $password_errors[] = 'Password harus mengandung minimal 1 angka';
+            }
+
+            if (!empty($password_errors)) {
+                setOld($_POST);
+                setFlash('error', implode('. ', $password_errors), 'error');
+                $this->redirect('auth/register');
+                return;
+            }
+
             $data = [
                 'username' => trim(post('username')),
-                'password' => password_hash(post('password'), PASSWORD_DEFAULT),
+                'password' => password_hash($raw_password, PASSWORD_DEFAULT),
                 'nama' => trim(post('nama')),
                 'role' => 'mahasiswa',
                 'nim' => trim(post('nim')),

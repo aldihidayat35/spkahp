@@ -53,7 +53,7 @@ $fixed_weights_enabled = !empty($ahp_settings['enforce_fixed_weights']);
             </div>
             <?php endif; ?>
 
-            <form action="<?= url('admin/pairwiseKriteria') ?>" method="POST">
+            <form action="<?= url('admin/savePairwiseKriteria') ?>" method="POST">
                 <?= csrf_field() ?>
 
                 <div class="table-responsive">

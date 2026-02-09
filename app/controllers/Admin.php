@@ -260,13 +260,18 @@ class Admin extends Controller {
         $hasil_rekomendasi = $mahasiswaModel->getHasilRekomendasi($id);
         $riwayat = $mahasiswaModel->getRiwayatPerhitungan($id);
 
+        // Get KHS files for this mahasiswa
+        $khsModel = $this->model('KHSModel');
+        $khs_list = $khsModel->getByMahasiswa($mahasiswa['user_id']);
+
         $data = [
             'title' => 'Detail Mahasiswa - ' . APP_NAME,
             'csrf_token' => $this->generateCSRF(),
             'mahasiswa' => $mahasiswa,
             'nilai' => $nilai_matkul,
             'rekomendasi' => $hasil_rekomendasi,
-            'riwayat' => $riwayat
+            'riwayat' => $riwayat,
+            'khs_list' => $khs_list
         ];
 
         $this->view('admin/mahasiswa/detail', $data);
@@ -390,8 +395,7 @@ class Admin extends Controller {
             $data = [
                 'kode' => strtoupper(trim(post('kode'))),
                 'nama_tema' => trim(post('nama_tema')),
-                'deskripsi' => trim(post('deskripsi')),
-                'icon' => trim(post('icon'))
+                'deskripsi' => trim(post('deskripsi'))
             ];
 
             $alternatifModel = $this->model('AlternatifModel');
@@ -421,8 +425,7 @@ class Admin extends Controller {
             $data = [
                 'kode' => strtoupper(trim(post('kode'))),
                 'nama_tema' => trim(post('nama_tema')),
-                'deskripsi' => trim(post('deskripsi')),
-                'icon' => trim(post('icon'))
+                'deskripsi' => trim(post('deskripsi'))
             ];
 
             if ($alternatifModel->update($id, $data)) {
@@ -698,8 +701,19 @@ class Admin extends Controller {
             $nilai = post('nilai');
 
             $kriteriaModel = $this->model('KriteriaModel');
-            if ($kriteriaModel->savePairwise($kriteria_1, $kriteria_2, $nilai)) {
-                setFlash('success', 'Perbandingan berhasil disimpan', 'success');
+            $success_count = 0;
+            $total = is_array($kriteria_1) ? count($kriteria_1) : 0;
+
+            if ($total > 0) {
+                for ($i = 0; $i < $total; $i++) {
+                    if ($kriteriaModel->savePairwise($kriteria_1[$i], $kriteria_2[$i], $nilai[$i])) {
+                        $success_count++;
+                    }
+                }
+            }
+
+            if ($success_count > 0) {
+                setFlash('success', "Berhasil menyimpan {$success_count} perbandingan kriteria", 'success');
             } else {
                 setFlash('error', 'Gagal menyimpan perbandingan', 'error');
             }
@@ -789,8 +803,8 @@ class Admin extends Controller {
         $mahasiswaModel = $this->model('MahasiswaModel');
         $alternatifModel = $this->model('AlternatifModel');
 
-        // Get all hasil rekomendasi
-        $query = "SELECT hr.*, m.nim, m.nama, at.nama_tema
+        // Get all hasil rekomendasi (ranking 1 = best recommendation per student)
+        $query = "SELECT hr.*, hr.mahasiswa_id, m.nim, m.nama, at.nama_tema
                  FROM hasil_rekomendasi hr
                  JOIN mahasiswa m ON hr.mahasiswa_id = m.id
                  JOIN alternatif_tema at ON hr.alternatif_id = at.id
@@ -916,7 +930,14 @@ class Admin extends Controller {
             if ($kurikulumModel->create($data)) {
                 setFlash('success', 'Kurikulum berhasil ditambahkan.', 'success');
             } else {
-                setFlash('error', 'Gagal menambahkan kurikulum.', 'error');
+                $error = $kurikulumModel->getLastError();
+                $msg = 'Gagal menambahkan kurikulum.';
+                if (strpos($error, 'Duplicate') !== false) {
+                    $msg = 'Gagal: Angkatan ' . $data['angkatan'] . ' sudah memiliki kurikulum.';
+                } elseif (!empty($error)) {
+                    $msg = 'Gagal menambahkan kurikulum: ' . $error;
+                }
+                setFlash('error', $msg, 'error');
             }
             
             redirect('admin/kurikulum');

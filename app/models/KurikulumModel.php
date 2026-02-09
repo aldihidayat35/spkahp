@@ -55,21 +55,51 @@ class KurikulumModel {
     /**
      * Create kurikulum
      */
+    private $lastError = '';
+
+    public function getLastError() {
+        return $this->lastError;
+    }
+
     public function create($data) {
         try {
+            // Ensure tahun_berlaku column exists, try with it first
             $query = "INSERT INTO kurikulum (angkatan, nama_kurikulum, tahun_berlaku, keterangan) 
                      VALUES (:angkatan, :nama_kurikulum, :tahun_berlaku, :keterangan)";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':angkatan', $data['angkatan']);
             $stmt->bindParam(':nama_kurikulum', $data['nama_kurikulum']);
-            $stmt->bindParam(':tahun_berlaku', $data['tahun_berlaku']);
-            $stmt->bindParam(':keterangan', $data['keterangan']);
+            $tahun_berlaku = $data['tahun_berlaku'] ?? '';
+            $stmt->bindParam(':tahun_berlaku', $tahun_berlaku);
+            $keterangan = $data['keterangan'] ?? '';
+            $stmt->bindParam(':keterangan', $keterangan);
             
             if ($stmt->execute()) {
                 return $this->db->lastInsertId();
             }
             return false;
         } catch (PDOException $e) {
+            // If tahun_berlaku column doesn't exist, try without it
+            if (strpos($e->getMessage(), 'tahun_berlaku') !== false) {
+                try {
+                    $query = "INSERT INTO kurikulum (angkatan, nama_kurikulum, keterangan) 
+                             VALUES (:angkatan, :nama_kurikulum, :keterangan)";
+                    $stmt = $this->db->prepare($query);
+                    $stmt->bindParam(':angkatan', $data['angkatan']);
+                    $stmt->bindParam(':nama_kurikulum', $data['nama_kurikulum']);
+                    $keterangan = $data['keterangan'] ?? '';
+                    $stmt->bindParam(':keterangan', $keterangan);
+                    
+                    if ($stmt->execute()) {
+                        return $this->db->lastInsertId();
+                    }
+                    return false;
+                } catch (PDOException $e2) {
+                    $this->lastError = $e2->getMessage();
+                    return false;
+                }
+            }
+            $this->lastError = $e->getMessage();
             return false;
         }
     }

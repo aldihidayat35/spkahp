@@ -33,7 +33,7 @@
                         <option value="">-- Pilih Tema --</option>
                         <?php foreach ($tema_list as $tema): ?>
                         <option value="<?= $tema['id'] ?>">
-                            <?= escape($tema['nama_alternatif']) ?>
+                            <?= escape($tema['nama_tema']) ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
@@ -161,7 +161,7 @@
                                                     <?php foreach ($tema_list as $tema): ?>
                                                     <option value="<?= $tema['id'] ?>" 
                                                             <?= $tema['id'] == $judul['tema_id'] ? 'selected' : '' ?>>
-                                                        <?= escape($tema['nama_alternatif']) ?>
+                                                        <?= escape($tema['nama_tema']) ?>
                                                     </option>
                                                     <?php endforeach; ?>
                                                 </select>

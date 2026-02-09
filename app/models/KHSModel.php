@@ -55,8 +55,10 @@ class KHSModel {
             $stmt->bindParam(':file_name', $data['file_name']);
             $stmt->bindParam(':file_path', $data['file_path']);
             $stmt->bindParam(':file_size', $data['file_size']);
-            $stmt->bindParam(':semester', $data['semester']);
-            $stmt->bindParam(':tahun_akademik', $data['tahun_akademik']);
+            $semester = $data['semester'] ?? null;
+            $tahun_akademik = $data['tahun_akademik'] ?? null;
+            $stmt->bindParam(':semester', $semester);
+            $stmt->bindParam(':tahun_akademik', $tahun_akademik);
             
             if ($stmt->execute()) {
                 return $this->db->lastInsertId();

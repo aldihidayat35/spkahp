@@ -737,8 +737,8 @@ class Mahasiswa extends Controller {
                         'file_name' => $file['name'],
                         'file_path' => $upload_path,
                         'file_size' => $file['size'],
-                        'semester' => post('semester'),
-                        'tahun_akademik' => post('tahun_akademik')
+                        'semester' => post('semester') ?: null,
+                        'tahun_akademik' => post('tahun_akademik') ?: null
                     ];
                     
                     if ($khsModel->upload($data)) {
