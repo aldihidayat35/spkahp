@@ -142,6 +142,25 @@ class Admin extends Controller {
 
             $userModel = $this->model('User');
             if ($userModel->update($id, $data)) {
+                // If role is mahasiswa, update mahasiswa table too
+                if (post('role') === 'mahasiswa') {
+                    $mahasiswaModel = $this->model('MahasiswaModel');
+                    $mahasiswaData = [
+                        'nim' => trim(post('nim')),
+                        'nama' => trim(post('nama')),
+                        'angkatan' => trim(post('angkatan')),
+                        'minat_utama' => trim(post('minat_utama')),
+                        'email' => trim(post('email')),
+                        'no_hp' => trim(post('no_hp'))
+                    ];
+                    
+                    // Get mahasiswa record by user_id
+                    $mahasiswa = $mahasiswaModel->getByUserId($id);
+                    if ($mahasiswa) {
+                        $mahasiswaModel->update($mahasiswa['id'], $mahasiswaData);
+                    }
+                }
+                
                 setFlash('success', 'User berhasil diupdate', 'success');
             } else {
                 setFlash('error', 'Gagal mengupdate user', 'error');
@@ -151,11 +170,19 @@ class Admin extends Controller {
         } else {
             $userModel = $this->model('User');
             $user = $userModel->findById($id);
+            
+            // Get mahasiswa data if user is mahasiswa
+            $mahasiswa = null;
+            if ($user && $user['role'] === 'mahasiswa') {
+                $mahasiswaModel = $this->model('MahasiswaModel');
+                $mahasiswa = $mahasiswaModel->getByUserId($id);
+            }
 
             $data = [
                 'title' => 'Edit User - ' . APP_NAME,
                 'csrf_token' => $this->generateCSRF(),
-                'user' => $user
+                'user' => $user,
+                'mahasiswa' => $mahasiswa
             ];
 
             $this->view('admin/users/form', $data);
